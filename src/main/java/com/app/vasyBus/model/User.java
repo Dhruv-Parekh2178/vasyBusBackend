@@ -3,6 +3,7 @@ package com.app.vasyBus.model;
 import com.app.vasyBus.model.enums.Role;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
@@ -19,6 +20,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "app_users")
+@Builder
 public class User implements UserDetails {
 
     @Id
