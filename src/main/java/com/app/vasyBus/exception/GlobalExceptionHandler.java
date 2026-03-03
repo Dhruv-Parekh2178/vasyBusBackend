@@ -17,8 +17,8 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiResponse<ErrorResponse>> handleValidationErrors(MethodArgumentNotValidException ex) {
-        String message = ex.getBindingResult().getFieldErrors()
-                .stream()
+            String message = ex.getBindingResult().getFieldErrors()
+                    .stream()
                 .map(err -> err.getField() + ": " + err.getDefaultMessage())
                 .collect(Collectors.joining(", "));
 
@@ -28,6 +28,19 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(UserAlreadyExistsException.class)
     public ResponseEntity<ApiResponse<ErrorResponse>> handleUserAlreadyExists(
+            UserAlreadyExistsException ex) {
+
+        ErrorResponse error = new ErrorResponse(
+                ex.getMessage(),
+                HttpStatus.CONFLICT.value(),
+                LocalDateTime.now()
+        );
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(new ApiResponse<>(false , "fail" , error));
+
+    }
+
+    @ExceptionHandler(BusAlreadyExistsException.class)
+    public ResponseEntity<ApiResponse<ErrorResponse>> handleBusAlreadyExists(
             UserAlreadyExistsException ex) {
 
         ErrorResponse error = new ErrorResponse(
