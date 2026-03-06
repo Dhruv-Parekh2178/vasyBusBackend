@@ -26,6 +26,7 @@ public class BusRequestDTO {
     @JsonProperty("bus_type")
     private BusType busType;
 
+
     @NotNull(message = "Total seats is required")
     @Min(value = 25, message = "Bus must have minimum 25 seats")
     @Max(value = 100, message = "Maximum 100 seats allowed")
