@@ -1,11 +1,10 @@
 package com.app.vasyBus.model;
 
-import com.app.vasyBus.model.enums.SeatType;
+import com.app.vasyBus.enums.SeatType;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.DynamicInsert;
 
 import java.time.Instant;
 
@@ -13,7 +12,11 @@ import java.time.Instant;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "seats")
+@Table(name = "seats", uniqueConstraints = {
+        @UniqueConstraint(name = "uk_schedule_seat", columnNames = {"schedule_id", "seat_number"})
+})
+@Builder
+@DynamicInsert
 public class Seat {
 
     @Id
@@ -25,8 +28,7 @@ public class Seat {
     @JoinColumn(name = "schedule_id", nullable = false)
     private Schedule schedule;
 
-    @OneToOne(mappedBy = "seat",
-            cascade = CascadeType.ALL)
+    @OneToOne(mappedBy = "seat", cascade = CascadeType.ALL)
     private BookingSeat bookingSeat;
 
     @Column(name = "seat_number", nullable = false)
@@ -36,10 +38,10 @@ public class Seat {
     @Column(name = "seat_type", nullable = false)
     private SeatType seatType;
 
-    @Column(name = "is_booked", nullable = false)
-    private boolean isBooked = false;
+    @Column(name = "booked", nullable = false, columnDefinition = "boolean default false")
+    private boolean booked;
 
     @CreationTimestamp
-    @Column(name = "created_at", updatable = false, nullable = false)
+    @Column(name = "created_at", updatable = false)
     private Instant createdAt;
 }

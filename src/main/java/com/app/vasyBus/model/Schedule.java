@@ -1,11 +1,15 @@
 package com.app.vasyBus.model;
 
-import com.app.vasyBus.model.enums.ScheduleStatus;
+import com.app.vasyBus.enums.ScheduleStatus;
+import com.app.vasyBus.model.Bus;
+import com.app.vasyBus.model.Route;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.DynamicInsert;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -16,7 +20,14 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "schedules")
+@Table(name = "schedules", indexes = {
+        @Index(name = "idx_schedule_bus", columnList = "bus_id"),
+        @Index(name = "idx_schedule_route", columnList = "route_id"),
+        @Index(name = "idx_schedule_travel_date", columnList = "travel_date"),
+        @Index(name = "idx_schedule_status", columnList = "schedule_status")
+})
+@Builder
+@DynamicInsert
 public class Schedule {
 
     @Id
@@ -55,13 +66,17 @@ public class Schedule {
     private BigDecimal pricePerSeat;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "schedule_status", nullable = false)
+    @Column(name = "schedule_status",
+            nullable = false,
+            columnDefinition = "varchar(20) default 'ACTIVE'")
     private ScheduleStatus scheduleStatus;
 
     @CreationTimestamp
-    @Column(name = "created_at", updatable = false, nullable = false)
+    @Column(name = "created_at", updatable = false)
     private Instant createdAt;
 
-    @Column(name = "is_deleted", nullable = false)
-    private boolean deleted = false;
+    @Column(name = "is_deleted",
+            nullable = false,
+            columnDefinition = "boolean default false")
+    private boolean deleted;
 }

@@ -1,7 +1,7 @@
 package com.app.vasyBus.service.bus;
 
-import com.app.vasyBus.dtos.BusRequestDTO;
-import com.app.vasyBus.dtos.BusResponseDTO;
+import com.app.vasyBus.dto.bus.BusRequestDTO;
+import com.app.vasyBus.dto.bus.BusResponseDTO;
 
 import java.util.List;
 

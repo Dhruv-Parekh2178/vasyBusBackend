@@ -1,6 +1,6 @@
 package com.app.vasyBus.model;
 
-import com.app.vasyBus.model.enums.Role;
+import com.app.vasyBus.enums.Role;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -14,12 +14,17 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
+import java.util.regex.Pattern;
 
 @Entity
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "app_users")
+@Table(name = "app_users", indexes = {
+        @Index(name = "idx_user_email", columnList = "email"),
+        @Index(name = "idx_user_phone", columnList = "phone"),
+        @Index(name = "idx_user_role", columnList = "role")
+})
 @Builder
 public class User implements UserDetails {
 
@@ -54,6 +59,19 @@ public class User implements UserDetails {
     @CreationTimestamp
     @Column(name = "created_at", updatable = false, nullable = false)
     private Instant createdAt;
+
+    @PrePersist
+    @PreUpdate
+    private void validatePhone() {
+        if (phone != null && !isValidIndianPhoneNumber(phone)) {
+            throw new IllegalArgumentException("Invalid Indian phone number. Must start with 6,7,8,9 and be 10 digits");
+        }
+    }
+
+    private boolean isValidIndianPhoneNumber(String phone) {
+        String phoneRegex = "^[6-9]\\d{9}$";
+        return Pattern.matches(phoneRegex, phone);
+    }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

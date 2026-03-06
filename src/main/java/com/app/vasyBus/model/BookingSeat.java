@@ -1,17 +1,20 @@
 package com.app.vasyBus.model;
 
-import com.app.vasyBus.model.enums.Gender;
+import com.app.vasyBus.enums.Gender;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity
+@Table(name = "booking_seats", indexes = {
+        @Index(name = "idx_booking_seat_booking", columnList = "booking_id"),
+        @Index(name = "idx_booking_seat_seat", columnList = "seat_id")
+})
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "booking_seats")
+@Builder
 public class BookingSeat {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "booking_seat_id")
@@ -22,17 +25,28 @@ public class BookingSeat {
     private Seat seat;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "booking_id")
+    @JoinColumn(name = "booking_id", nullable = false)
     private Booking booking;
 
-    @Column(name = "passenger_name", nullable = false)
+    @Column(
+            name = "passenger_name",
+            nullable = false,
+            length = 100
+    )
     private String passengerName;
 
-    @Column(name = "passenger_age", nullable = false)
+    @Column(
+            name = "passenger_age",
+            nullable = false,
+            columnDefinition = "INT"
+    )
     private Integer passengerAge;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "passenger_gender", nullable = false)
+    @Column(
+            name = "passenger_gender",
+            nullable = false,
+            length = 10
+    )
     private Gender passengerGender;
-
 }

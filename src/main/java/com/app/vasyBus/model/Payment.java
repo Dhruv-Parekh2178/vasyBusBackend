@@ -1,12 +1,11 @@
 package com.app.vasyBus.model;
 
-import com.app.vasyBus.model.enums.CurrencyType;
-import com.app.vasyBus.model.enums.PaymentStatus;
+import com.app.vasyBus.enums.CurrencyType;
+import com.app.vasyBus.enums.PaymentStatus;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.DynamicInsert;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -15,7 +14,13 @@ import java.time.Instant;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "payments")
+@Table(name = "payments", indexes = {
+        @Index(name = "idx_payment_booking", columnList = "booking_id"),
+        @Index(name = "idx_payment_stripe", columnList = "stripe_payment_id"),
+        @Index(name = "idx_payment_status", columnList = "payment_status")
+})
+@Builder
+@DynamicInsert
 public class Payment {
 
     @Id
@@ -34,14 +39,18 @@ public class Payment {
     private BigDecimal amount;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "currency", nullable = false)
+    @Column(name = "currency",
+            nullable = false,
+            columnDefinition = "varchar(10) default 'INR'")
     private CurrencyType currency;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "payment_status", nullable = false)
+    @Column(name = "payment_status",
+            nullable = false,
+            columnDefinition = "varchar(20) default 'PENDING'")
     private PaymentStatus paymentStatus;
 
     @CreationTimestamp
-    @Column(name = "created_at", updatable = false, nullable = false)
+    @Column(name = "created_at", updatable = false)
     private Instant createdAt;
 }

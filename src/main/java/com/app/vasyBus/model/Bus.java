@@ -1,11 +1,10 @@
 package com.app.vasyBus.model;
 
-import com.app.vasyBus.model.enums.BusType;
+import com.app.vasyBus.enums.BusType;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.DynamicInsert;
 
 import java.time.Instant;
 import java.util.List;
@@ -14,7 +13,11 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "buses")
+@Table(name = "buses", indexes = {
+        @Index(name = "idx_bus_number", columnList = "bus_number")
+})
+@Builder
+@DynamicInsert
 public class Bus {
 
     @Id
@@ -39,7 +42,7 @@ public class Bus {
     private String operatorName;
 
     @CreationTimestamp
-    @Column(name = "created_at", updatable = false, nullable = false)
+    @Column(name = "created_at", updatable = false)
     private Instant createdAt;
 
     @OneToMany(mappedBy = "bus",
@@ -47,6 +50,8 @@ public class Bus {
             orphanRemoval = true)
     private List<Schedule> schedules;
 
-    @Column(name = "is_deleted", nullable = false)
-    private boolean deleted = false;
+    @Column(name = "is_deleted",
+            nullable = false,
+            columnDefinition = "boolean default false")
+    private boolean deleted;
 }

@@ -1,7 +1,7 @@
 package com.app.vasyBus.service.bus;
 
-import com.app.vasyBus.dtos.BusRequestDTO;
-import com.app.vasyBus.dtos.BusResponseDTO;
+import com.app.vasyBus.dto.bus.BusRequestDTO;
+import com.app.vasyBus.dto.bus.BusResponseDTO;
 import com.app.vasyBus.exception.BusAlreadyExistsException;
 import com.app.vasyBus.exception.ResourceNotFoundException;
 import com.app.vasyBus.model.Bus;
@@ -12,7 +12,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -27,56 +26,56 @@ public class BusServiceImpl implements BusService{
             throw new BusAlreadyExistsException("Bus number already exists");
         }
 
-        Bus bus = modelMapper.map(busRequestDTO , Bus.class);
-        bus = busRepository.save(bus);
-        return modelMapper.map(bus , BusResponseDTO.class);
+        Bus bus = Bus.builder()
+                .busName(busRequestDTO.getBusName())
+                .busNumber(busRequestDTO.getBusNumber())
+                .busType(busRequestDTO.getBusType())
+                .totalSeats(busRequestDTO.getTotalSeats())
+                .operatorName(busRequestDTO.getOperatorName())
+                .build();
+
+         busRepository.save(bus);
+
+         return busRepository.findBusById(bus.getBusId());
     }
 
     @Override
         public List<BusResponseDTO> getAllBuses() {
-            List<Bus> buses = busRepository.findAll().stream()
-                    .filter(bus -> !bus.isDeleted())
-                    .toList();
-
-        if (buses.isEmpty()) {
-            return Collections.emptyList();
-        }
-
-
-        return buses.stream().map(bus -> modelMapper.map(bus , BusResponseDTO.class)).toList();
+        return busRepository.findAllActiveBuses();
         }
 
     @Override
     public BusResponseDTO getBusById(Long id) {
-      Bus savedBus = busRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Bus not found with id: " + id));
+        BusResponseDTO savedBus = busRepository.findBusById(id);
 
-      return modelMapper.map(savedBus , BusResponseDTO.class);
+        if(savedBus == null){
+            throw new ResourceNotFoundException("Bus not found with id: " + id);
+        }
+
+        return savedBus;
     }
 
     @Override
     public BusResponseDTO updateBus(Long id, BusRequestDTO busRequestDTO) {
-        Bus savedBus = busRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Bus not found with id: " + id));
+    getBusById(id);
+        busRepository.updateBus(
+                id,
+                busRequestDTO.getBusName(),
+                busRequestDTO.getBusNumber(),
+                busRequestDTO.getBusType().name(),
+                busRequestDTO.getTotalSeats(),
+                busRequestDTO.getOperatorName()
+        );
 
-        savedBus.setBusName(busRequestDTO.getBusName());
-        savedBus.setBusNumber(busRequestDTO.getBusNumber());
-        savedBus.setBusType(busRequestDTO.getBusType());
-        savedBus.setTotalSeats(busRequestDTO.getTotalSeats());
-        savedBus.setOperatorName(busRequestDTO.getOperatorName());
-
-        Bus updatedBus = busRepository.save(savedBus);
-
-        return modelMapper.map(updatedBus , BusResponseDTO.class);
+        return busRepository.findBusById(id);
     }
 
     @Override
     public String deleteBus(Long id) {
 
-        Bus bus = busRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Bus not found with id: " + id));
+        getBusById(id);
 
-        busRepository.delete(bus);
+        busRepository.softDeleteBus(id);
 
         return "Bus deleted successfully";
     }
