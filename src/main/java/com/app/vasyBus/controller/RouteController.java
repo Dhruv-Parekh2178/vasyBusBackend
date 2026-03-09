@@ -6,6 +6,7 @@ import com.app.vasyBus.utils.ApiResponse;
 import com.app.vasyBus.service.route.RouteService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,7 +23,7 @@ public class RouteController {
     @PostMapping("/add/route")
     public ResponseEntity<ApiResponse<RouteResponseDTO>> addRoute(@Valid @RequestBody RouteRequestDTO routeRequestDTO){
         RouteResponseDTO routeResponseDTO = routeService.addRoute(routeRequestDTO);
-        return ResponseEntity.ok(ApiResponse.success(routeResponseDTO));
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(routeResponseDTO));
     }
 
     @GetMapping("/routes")

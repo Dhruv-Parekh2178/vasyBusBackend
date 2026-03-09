@@ -36,10 +36,11 @@ public class ScheduleRequestDTO {
 
     @NotNull(message = "Travel date is required")
     @JsonFormat(pattern = "yyyy-MM-dd")
-
+    @JsonProperty("travel_date")
     private LocalDate travelDate;
 
     @NotNull(message = "Price per seat is required")
     @Positive(message = "Price must be greater than 0")
+    @JsonProperty("price_per_seat")
     private BigDecimal pricePerSeat;
 }

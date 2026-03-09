@@ -9,6 +9,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -29,7 +30,7 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<AuthResponseDTO>> userRegister(@RequestBody @Valid RegisterRequestDTO request){
-        return ResponseEntity.ok(ApiResponse.success(authService.register(request)));
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(authService.register(request)));
     }
 
     @PostMapping("/logout")

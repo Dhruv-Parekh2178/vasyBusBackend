@@ -35,7 +35,7 @@ public interface ScheduleRepository extends JpaRepository<Schedule , Long> {
             s.created_at AS createdAt
             FROM schedules s
         JOIN buses b ON s.bus_id = b.bus_id
-        JOIN routes ON s.route_id = r.route_id
+        JOIN routes r ON s.route_id = r.route_id
         WHERE s.is_deleted = false
         ORDER BY s.travel_date ASC, s.departure_time ASC
 """,nativeQuery = true)
@@ -58,7 +58,7 @@ public interface ScheduleRepository extends JpaRepository<Schedule , Long> {
             s.created_at AS createdAt
             FROM schedules s
         JOIN buses b ON s.bus_id = b.bus_id
-        JOIN routes ON s.route_id = r.route_id
+        JOIN routes r ON s.route_id = r.route_id
         WHERE s.is_deleted = false AND s.schedule_id =:id
 """,nativeQuery = true)
     ScheduleResponseDTO findScheduleById(@Param("id") Long id);
@@ -72,7 +72,7 @@ public interface ScheduleRepository extends JpaRepository<Schedule , Long> {
               arrival_time =:arrivalTime,
               travel_date =:travelDate,
               price_per_seat=:pricePerSeat
-           WHERE s.is_deleted = false AND s.schedule_id =:id
+           WHERE is_deleted = false AND schedule_id =:id
 """,nativeQuery = true)
     void updateSchedule(@Param("id") Long id, @Param("departureTime")Instant departureTime ,
                         @Param("arrivalTime") Instant arrivalTime, @Param("travelDate")LocalDate travelDate,
@@ -84,7 +84,7 @@ public interface ScheduleRepository extends JpaRepository<Schedule , Long> {
        UPDATE schedules
           SET 
               is_deleted = true
-          WHERE s.schedule_id =:id
+          WHERE schedule_id =:id
 """,nativeQuery = true)
     void softDeleteSchedule(@Param("id") Long id);
 
