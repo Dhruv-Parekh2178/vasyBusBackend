@@ -43,10 +43,16 @@ public class SecurityConfig {
                                 "api/auth/logout",
                                 "/api/auth/register",
                                 "/api/schedule/search",
+                                "/api/seats/schedule/**",
                                 "/api/schedule/**",
                                 "/api/seats/schedule/**",
                                 "/api/routes/cities"
                         ).permitAll()
+
+                        .requestMatchers(
+                                "/api/seats/lock",
+                                "/api/seats/unlock"
+                        ).authenticated()
 
                         .requestMatchers(
                                 "/api/add/bus",

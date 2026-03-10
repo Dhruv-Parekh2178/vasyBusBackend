@@ -56,6 +56,19 @@ public class GlobalExceptionHandler {
 
     }
 
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<ApiResponse<ErrorResponse>> handleIllegalStateEx(
+            IllegalStateException ex) {
+
+        ErrorResponse error = new ErrorResponse(
+                ex.getMessage(),
+                HttpStatus.CONFLICT.value(),
+                LocalDateTime.now()
+        );
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(ApiResponse.fail(error));
+
+    }
+
     @ExceptionHandler(InvalidCredentialsException.class)
     public ResponseEntity<ApiResponse<ErrorResponse>> handleInvalidCredentials(
             InvalidCredentialsException ex) {

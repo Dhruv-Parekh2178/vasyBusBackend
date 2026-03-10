@@ -47,6 +47,18 @@ public class JwtUtil {
 
     }
 
+    public Long extractUserId(String token) {
+        Claims claims = Jwts.parser()
+                .verifyWith(getSecretKey())
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+
+        return Long.parseLong(claims.get("userId").toString());
+    }
+
+
+
     public boolean validateToken(String token, UserDetails userDetails) {
         String userName = getUserNameFromToken(token);
         return userName.equals(userDetails.getUsername()) && !isTokenExpired(token);

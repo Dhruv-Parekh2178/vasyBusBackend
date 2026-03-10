@@ -74,15 +74,4 @@ public interface RouteRepository extends JpaRepository<Route , Long> {
         LIMIT 10
         """, nativeQuery = true)
     List<String> findCitiesByQuery(@Param("query") String query);
-
-    @Modifying
-    @Transactional
-    @Query(value = """
-    UPDATE schedules
-    SET is_deleted = true, schedule_status = 'CANCELLED'
-    WHERE route_id = :routeId
-    AND is_deleted = false
-    """, nativeQuery = true)
-    void softDeleteSchedulesByRouteId(@Param("routeId") Long routeId);
-
 }
