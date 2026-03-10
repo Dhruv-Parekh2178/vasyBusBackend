@@ -2,6 +2,8 @@ package com.app.vasyBus.dto.booking;
 
 import com.app.vasyBus.dto.bookingSeat.BookingSeatRequestDTO;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.Data;
@@ -11,20 +13,15 @@ import java.util.List;
 
 @Data
 public class BookingRequestDTO {
-    @NotNull(message = "User ID is required")
-    @JsonProperty("user_id")
-    private Long userId;
-
     @NotNull(message = "Schedule ID is required")
     @JsonProperty("schedule_id")
     private Long scheduleId;
 
     @JsonProperty("seat_ids")
-    @NotNull(message = "Seat IDs are required")
-    private List<BookingSeatRequestDTO> seatIds;
+    @NotEmpty(message = "At least one seat must be selected")
+    private List<Long> seatIds;
 
-    @JsonProperty("total_amount")
-    @NotNull(message = "Total amount is required")
-    @Positive(message = "Total amount must be greater than 0")
-    private BigDecimal totalAmount;
+    @NotEmpty(message = "Passenger details are required")
+    @Valid
+    private List<BookingSeatRequestDTO> passengers;
 }
