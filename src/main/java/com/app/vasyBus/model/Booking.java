@@ -57,11 +57,22 @@ public class Booking {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "booking_status", nullable = false, length = 30,columnDefinition = "VARCHAR(30) DEFAULT 'PENDING'")
-    private BookingStatus bookingStatus;
+    private BookingStatus bookingStatus=BookingStatus.PENDING;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "payment_status", nullable = false, length = 20, columnDefinition = "VARCHAR(20) DEFAULT 'PENDING'")
-    private PaymentStatus paymentStatus;
+    private PaymentStatus paymentStatus = PaymentStatus.PENDING;
+
+    @Column(name = "is_deleted",
+            nullable = false,
+            columnDefinition = "boolean default false")
+    private boolean deleted;
+
+    @Column(name = "cancelled_by", length = 10)
+    private String cancelledBy;
+
+    @Column(name = "cancellation_reason", length = 255)
+    private String cancellationReason;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false, nullable = false)

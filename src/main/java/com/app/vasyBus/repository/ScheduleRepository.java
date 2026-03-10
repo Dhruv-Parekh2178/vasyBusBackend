@@ -108,12 +108,12 @@ public interface ScheduleRepository extends JpaRepository<Schedule , Long> {
                 s.arrival_time AS arrivalTime,
                 s.travel_date AS travelDate,
                 s.price_per_seat AS pricePerSeat,
-                COUNT(se.seat_id) FILTER (WHERE se.booked = false) AS availableSeats,
+               COUNT(se.seat_id) FILTER (WHERE se.booked = false AND se.is_deleted = false) AS availableSeats,
                 s.schedule_status AS status
             FROM schedules s
             JOIN buses b ON s.bus_id = b.bus_id
             JOIN routes r ON s.route_id = r.route_id
-            JOIN seats se ON se.schedule_id = s.schedule_id
+            JOIN seats se ON se.schedule_id = s.schedule_id AND se.is_deleted = false
             WHERE LOWER(r.source_city) = LOWER(:source)
             AND LOWER(r.destination_city) = LOWER(:destination)
             AND s.travel_date = :travelDate
@@ -129,5 +129,42 @@ public interface ScheduleRepository extends JpaRepository<Schedule , Long> {
             @Param("destination") String destination,
             @Param("travelDate") LocalDate travelDate
     );
+
+    @Modifying
+    @Transactional
+    @Query(value = """
+    UPDATE schedules
+    SET is_deleted = true, schedule_status = 'CANCELLED'
+    WHERE bus_id = :busId
+    AND is_deleted = false
+    """, nativeQuery = true)
+    void softDeleteSchedulesByBusId(@Param("busId") Long busId);
+
+    @Modifying
+    @Transactional
+    @Query(value = """
+        UPDATE schedules
+        SET is_deleted = true,
+            schedule_status = 'CANCELLED'
+        WHERE route_id = :routeId
+        AND is_deleted = false
+        """, nativeQuery = true)
+    void softDeleteSchedulesByRouteId(@Param("routeId") Long routeId);
+
+    @Query(value = """
+        SELECT schedule_id
+        FROM schedules
+        WHERE bus_id = :busId
+        AND is_deleted = false
+        """, nativeQuery = true)
+    List<Long> findActiveScheduleIdsByBusId(@Param("busId") Long busId);
+
+    @Query(value = """
+        SELECT schedule_id
+        FROM schedules
+        WHERE route_id = :routeId
+        AND is_deleted = false
+        """, nativeQuery = true)
+    List<Long> findActiveScheduleIdsByRouteId(@Param("routeId") Long routeId);
 
 }

@@ -3,6 +3,7 @@ package com.app.vasyBus.model;
 import com.app.vasyBus.enums.Gender;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.DynamicInsert;
 
 @Entity
 @Table(name = "booking_seats", indexes = {
@@ -10,6 +11,7 @@ import lombok.*;
         @Index(name = "idx_booking_seat_seat", columnList = "seat_id")
 })
 @Data
+@DynamicInsert
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -49,4 +51,9 @@ public class BookingSeat {
             length = 10
     )
     private Gender passengerGender;
+
+    @Column(name = "is_deleted",
+            nullable = false,
+            columnDefinition = "boolean default false")
+    private boolean deleted;
 }

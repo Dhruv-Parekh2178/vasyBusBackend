@@ -1,4 +1,4 @@
-package com.app.vasyBus.controller;
+package com.app.vasyBus.controller.publicUser;
 
 import com.app.vasyBus.dto.auth.AuthResponseDTO;
 import com.app.vasyBus.dto.user.LoginRequestDTO;
@@ -6,7 +6,6 @@ import com.app.vasyBus.dto.user.RegisterRequestDTO;
 import com.app.vasyBus.utils.ApiResponse;
 import com.app.vasyBus.config.security.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

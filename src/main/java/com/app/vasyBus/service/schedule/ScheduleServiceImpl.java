@@ -108,6 +108,7 @@ public class ScheduleServiceImpl implements ScheduleService {
             throw new ResourceNotFoundException(
                     "Schedule not found with id: " + id);
         }
+        seatRepository.softDeleteSeatsByScheduleId(id);
         scheduleRepository.softDeleteSchedule(id);
         return "Schedule deleted successfully";
     }

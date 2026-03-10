@@ -69,7 +69,7 @@ public class Schedule {
     @Column(name = "schedule_status",
             nullable = false,
             columnDefinition = "varchar(20) default 'ACTIVE'")
-    private ScheduleStatus scheduleStatus;
+    private ScheduleStatus scheduleStatus =ScheduleStatus.ACTIVE;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)

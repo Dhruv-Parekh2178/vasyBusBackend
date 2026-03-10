@@ -1,4 +1,4 @@
-package com.app.vasyBus.controller;
+package com.app.vasyBus.controller.admin;
 
 import com.app.vasyBus.dto.bus.BusRequestDTO;
 import com.app.vasyBus.dto.bus.BusResponseDTO;

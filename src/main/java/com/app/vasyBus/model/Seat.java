@@ -41,6 +41,11 @@ public class Seat {
     @Column(name = "booked", nullable = false, columnDefinition = "boolean default false")
     private boolean booked;
 
+    @Column(name = "is_deleted",
+            nullable = false,
+            columnDefinition = "boolean default false")
+    private boolean deleted;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private Instant createdAt;

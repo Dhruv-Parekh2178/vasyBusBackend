@@ -44,7 +44,8 @@ public class SecurityConfig {
                                 "/api/auth/register",
                                 "/api/schedule/search",
                                 "/api/schedule/**",
-                                "/api/seats/schedule/**"
+                                "/api/seats/schedule/**",
+                                "/api/routes/cities"
                         ).permitAll()
 
                         .requestMatchers(
@@ -59,6 +60,7 @@ public class SecurityConfig {
                                 "/api/update/route/**",
                                 "/api/delete/route/**",
                                 "/api/add/schedule",
+                                "/api/admin/schedule/**",
                                 "/api/update/schedule/**",
                                 "/api/delete/schedule/**"
                         ).hasRole("ADMIN")

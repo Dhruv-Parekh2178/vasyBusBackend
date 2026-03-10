@@ -60,4 +60,29 @@ public interface RouteRepository extends JpaRepository<Route , Long> {
         WHERE route_id =:id
         """, nativeQuery = true)
     void softDeleteRoute(@Param("id") Long id);
+
+    @Query(value = """
+        SELECT DISTINCT city FROM (
+            SELECT source_city AS city FROM routes
+            WHERE is_deleted = false
+            UNION
+            SELECT destination_city AS city FROM routes
+            WHERE is_deleted = false
+        ) AS cities
+        WHERE LOWER(city) LIKE LOWER(CONCAT(:query, '%'))
+        ORDER BY city ASC
+        LIMIT 10
+        """, nativeQuery = true)
+    List<String> findCitiesByQuery(@Param("query") String query);
+
+    @Modifying
+    @Transactional
+    @Query(value = """
+    UPDATE schedules
+    SET is_deleted = true, schedule_status = 'CANCELLED'
+    WHERE route_id = :routeId
+    AND is_deleted = false
+    """, nativeQuery = true)
+    void softDeleteSchedulesByRouteId(@Param("routeId") Long routeId);
+
 }

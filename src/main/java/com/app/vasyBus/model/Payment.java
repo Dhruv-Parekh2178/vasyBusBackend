@@ -42,13 +42,18 @@ public class Payment {
     @Column(name = "currency",
             nullable = false,
             columnDefinition = "varchar(10) default 'INR'")
-    private CurrencyType currency;
+    private CurrencyType currency =CurrencyType.INR;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "payment_status",
             nullable = false,
             columnDefinition = "varchar(20) default 'PENDING'")
-    private PaymentStatus paymentStatus;
+    private PaymentStatus paymentStatus = PaymentStatus.PENDING;
+
+    @Column(name = "is_deleted",
+            nullable = false,
+            columnDefinition = "boolean default false")
+    private boolean deleted;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)

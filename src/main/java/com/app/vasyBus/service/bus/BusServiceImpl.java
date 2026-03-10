@@ -6,9 +6,12 @@ import com.app.vasyBus.exception.BusAlreadyExistsException;
 import com.app.vasyBus.exception.ResourceNotFoundException;
 import com.app.vasyBus.model.Bus;
 import com.app.vasyBus.repository.BusRepository;
+import com.app.vasyBus.repository.ScheduleRepository;
+import com.app.vasyBus.repository.SeatRepository;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collections;
 import java.util.List;
@@ -18,7 +21,8 @@ import java.util.List;
 public class BusServiceImpl implements BusService{
 
     private final BusRepository busRepository;
-    private final ModelMapper modelMapper;
+   private final ScheduleRepository scheduleRepository;
+   private final SeatRepository seatRepository;
 
     @Override
     public BusResponseDTO addBus(BusRequestDTO busRequestDTO) {
@@ -71,12 +75,20 @@ public class BusServiceImpl implements BusService{
     }
 
     @Override
+    @Transactional
     public String deleteBus(Long id) {
 
         getBusById(id);
+        List<Long> scheduleIds =
+                scheduleRepository.findActiveScheduleIdsByBusId(id);
 
+        if (!scheduleIds.isEmpty()) {
+            scheduleIds.forEach(
+                    scheduleId -> seatRepository
+                            .softDeleteSeatsByScheduleId(scheduleId));
+        }
+        scheduleRepository.softDeleteSchedulesByBusId(id);
         busRepository.softDeleteBus(id);
-
         return "Bus deleted successfully";
     }
 
