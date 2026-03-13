@@ -46,7 +46,8 @@ public class SecurityConfig {
                                 "/api/seats/schedule/**",
                                 "/api/schedule/**",
                                 "/api/seats/schedule/**",
-                                "/api/routes/cities"
+                                "/api/routes/cities",
+                                "/api/payments/webhook"
                         ).permitAll()
                         .requestMatchers(
                                 "/api/add/bus",
