@@ -1,4 +1,4 @@
-package com.app.vasyBus.controller.publicUser;
+package com.app.vasyBus.controller.publicuser;
 
 import com.app.vasyBus.service.city.CityService;
 import com.app.vasyBus.utils.ApiResponse;

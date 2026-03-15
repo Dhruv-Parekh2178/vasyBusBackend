@@ -179,7 +179,7 @@ public class BookingServiceImpl implements BookingService{
                 bookingSeatRepository.findAllPassengersByBookingId(bookingId);
         passengers.forEach(p ->
                 seatRepository.markSeatAsAvailable(p.getSeatId()));
-        bookingSeatRepository.softDeleteByBookingId(bookingId);
+        bookingSeatRepository.hardDeleteByBookingId(bookingId);
         bookingRepository.cancelBooking(bookingId, "USER", reason);
 
         return "Booking cancelled successfully";

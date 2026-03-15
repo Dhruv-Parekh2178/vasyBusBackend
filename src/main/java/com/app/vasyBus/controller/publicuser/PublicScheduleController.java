@@ -1,4 +1,4 @@
-package com.app.vasyBus.controller.publicUser;
+package com.app.vasyBus.controller.publicuser;
 
 import com.app.vasyBus.dto.schedule.ScheduleResponseDTO;
 import com.app.vasyBus.dto.schedule.ScheduleSearchDTO;

@@ -63,6 +63,30 @@ public class PaymentServiceImpl implements PaymentService {
                 .multiply(java.math.BigDecimal.valueOf(100))
                 .longValue();
 
+        com.app.vasyBus.dto.payment.PaymentResponseDTO existingPayment =
+                paymentRepository.findPaymentByBookingId(booking.getBookingId());
+
+        if (existingPayment != null
+                && existingPayment.getStripePaymentId() != null
+                && "PENDING".equals(existingPayment.getPaymentStatus())) {
+            try {
+                PaymentIntent existingIntent =
+                        PaymentIntent.retrieve(existingPayment.getStripePaymentId());
+                log.info("Returning existing PaymentIntent {} for booking {}",
+                        existingIntent.getId(), booking.getBookingId());
+                return new PaymentIntentResponse(
+                        existingIntent.getClientSecret(),
+                        existingIntent.getId(),
+                        booking.getBookingId(),
+                        amountInPaise,
+                        "INR"
+                );
+            } catch (Exception e) {
+                log.warn("Could not retrieve existing PaymentIntent, creating new one: {}",
+                        e.getMessage());
+            }
+        }
+
         try {
             PaymentIntentCreateParams params =
                     PaymentIntentCreateParams.builder()
@@ -105,8 +129,7 @@ public class PaymentServiceImpl implements PaymentService {
             );
 
         } catch (Exception e) {
-            log.error("Stripe PaymentIntent creation failed: {}",
-                    e.getMessage());
+            log.error("Stripe PaymentIntent creation failed: {}", e.getMessage());
             throw new IllegalStateException(
                     "Payment processing failed. Please try again.");
         }
@@ -117,59 +140,44 @@ public class PaymentServiceImpl implements PaymentService {
     public String handleWebhook(String payload, String sigHeader) {
 
         Event event;
-
         try {
             event = Webhook.constructEvent(
-                    payload,
-                    sigHeader,
-                    stripeConfig.getWebhookSecret()
-            );
+                    payload, sigHeader, stripeConfig.getWebhookSecret());
         } catch (SignatureVerificationException e) {
-            log.error("Webhook signature verification failed: {}",
-                    e.getMessage());
+            log.error("Webhook signature verification failed: {}", e.getMessage());
             throw new IllegalStateException("Invalid webhook signature");
         }
 
         log.info("Received Stripe event: {}", event.getType());
 
         switch (event.getType()) {
-
             case "payment_intent.succeeded" -> {
                 try {
                     PaymentIntent intent = (PaymentIntent)
-                            event.getDataObjectDeserializer()
-                                    .deserializeUnsafe();
+                            event.getDataObjectDeserializer().deserializeUnsafe();
                     handlePaymentSuccess(intent);
                 } catch (Exception e) {
-                    log.error("Failed to process payment_intent.succeeded: {}",
-                            e.getMessage());
+                    log.error("Failed to process payment_intent.succeeded: {}", e.getMessage());
                 }
             }
-
             case "payment_intent.payment_failed" -> {
                 try {
                     PaymentIntent intent = (PaymentIntent)
-                            event.getDataObjectDeserializer()
-                                    .deserializeUnsafe();
+                            event.getDataObjectDeserializer().deserializeUnsafe();
                     handlePaymentFailed(intent);
                 } catch (Exception e) {
-                    log.error("Failed to process payment_intent.payment_failed: {}",
-                            e.getMessage());
+                    log.error("Failed to process payment_intent.payment_failed: {}", e.getMessage());
                 }
             }
-
             default -> log.info("Unhandled Stripe event: {}", event.getType());
         }
 
         return "Webhook processed";
     }
 
-
     private void handlePaymentSuccess(PaymentIntent intent) {
         String stripePaymentId = intent.getId();
-        paymentRepository.updatePaymentStatus(
-                stripePaymentId, PaymentStatus.SUCCESS.name());
-
+        paymentRepository.updatePaymentStatus(stripePaymentId, PaymentStatus.SUCCESS.name());
         paymentRepository.findByStripePaymentId(stripePaymentId)
                 .ifPresent(payment -> {
                     bookingRepository.updateBookingStatuses(
@@ -184,9 +192,7 @@ public class PaymentServiceImpl implements PaymentService {
 
     private void handlePaymentFailed(PaymentIntent intent) {
         String stripePaymentId = intent.getId();
-        paymentRepository.updatePaymentStatus(
-                stripePaymentId, PaymentStatus.FAILED.name());
-
+        paymentRepository.updatePaymentStatus(stripePaymentId, PaymentStatus.FAILED.name());
         log.warn("Payment failed for Stripe intent: {}", stripePaymentId);
     }
 }

@@ -37,4 +37,12 @@ public interface BookingSeatRepository extends JpaRepository<BookingSeat , Long>
             UPDATE booking_seats SET is_deleted = true WHERE booking_id = :bookingId AND is_deleted = false
 """, nativeQuery = true)
     void softDeleteByBookingId(@Param("bookingId") Long bookingId);
+
+    @Modifying
+    @Transactional
+    @Query(value = """
+        DELETE FROM booking_seats
+        WHERE booking_id = :bookingId
+    """, nativeQuery = true)
+    void hardDeleteByBookingId(@Param("bookingId") Long bookingId);
 }

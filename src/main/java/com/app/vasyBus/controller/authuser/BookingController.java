@@ -1,4 +1,4 @@
-package com.app.vasyBus.controller.authUser;
+package com.app.vasyBus.controller.authuser;
 
 import com.app.vasyBus.config.security.JwtUtil;
 import com.app.vasyBus.dto.booking.BookingDetailResponse;

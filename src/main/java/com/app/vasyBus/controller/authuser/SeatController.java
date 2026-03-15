@@ -1,8 +1,7 @@
-package com.app.vasyBus.controller.authUser;
+package com.app.vasyBus.controller.authuser;
 
 import com.app.vasyBus.config.security.JwtUtil;
 import com.app.vasyBus.dto.seat.SeatLockRequestDTO;
-import com.app.vasyBus.dto.seat.SeatResponseDTO;
 import com.app.vasyBus.service.seat.SeatService;
 import com.app.vasyBus.utils.ApiResponse;
 import jakarta.servlet.http.HttpServletRequest;
@@ -10,8 +9,6 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api")
