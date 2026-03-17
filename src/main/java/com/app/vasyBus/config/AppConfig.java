@@ -16,7 +16,7 @@ import java.util.List;
 
 @Configuration
 @RequiredArgsConstructor
-public class AppConfig {
+public class  AppConfig {
 
     @Bean
     public ModelMapper modelMapper(){
