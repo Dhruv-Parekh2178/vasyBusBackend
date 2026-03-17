@@ -9,6 +9,7 @@ import com.app.vasyBus.enums.BookingStatus;
 import com.app.vasyBus.enums.PaymentStatus;
 import com.app.vasyBus.enums.ScheduleStatus;
 import com.app.vasyBus.exception.ResourceNotFoundException;
+import com.app.vasyBus.kafka.producer.BookingEventProducer;
 import com.app.vasyBus.model.*;
 import com.app.vasyBus.repository.*;
 import lombok.RequiredArgsConstructor;
@@ -32,6 +33,7 @@ public class BookingServiceImpl implements BookingService{
     private final UserRepository userRepository;
     private final BookingRepository bookingRepository;
     private final BookingSeatRepository bookingSeatRepository;
+    private final BookingEventProducer bookingEventProducer;
 
     private static final String SEAT_LOCK_PREFIX = "seat:lock:";
 
