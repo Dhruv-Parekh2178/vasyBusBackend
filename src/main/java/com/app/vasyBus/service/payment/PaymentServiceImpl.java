@@ -3,13 +3,18 @@ package com.app.vasyBus.service.payment;
 import com.app.vasyBus.config.StripeConfig;
 import com.app.vasyBus.dto.payment.PaymentIntentResponse;
 import com.app.vasyBus.dto.payment.PaymentRequestDTO;
+import com.app.vasyBus.dto.payment.PaymentResponseDTO;
 import com.app.vasyBus.enums.BookingStatus;
 import com.app.vasyBus.enums.CurrencyType;
 import com.app.vasyBus.enums.PaymentStatus;
 import com.app.vasyBus.exception.ResourceNotFoundException;
+import com.app.vasyBus.kafka.event.BookingCreatedEvent;
+import com.app.vasyBus.kafka.event.PaymentSuccessEvent;
+import com.app.vasyBus.kafka.producer.PaymentEventProducer;
 import com.app.vasyBus.model.Booking;
 import com.app.vasyBus.model.Payment;
 import com.app.vasyBus.repository.BookingRepository;
+import com.app.vasyBus.repository.BookingSeatRepository;
 import com.app.vasyBus.repository.PaymentRepository;
 import com.stripe.exception.SignatureVerificationException;
 import com.stripe.model.Event;
@@ -21,6 +26,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -29,6 +37,8 @@ public class PaymentServiceImpl implements PaymentService {
     private final BookingRepository bookingRepository;
     private final PaymentRepository paymentRepository;
     private final StripeConfig stripeConfig;
+    private final PaymentEventProducer paymentEventProducer;
+    private final BookingSeatRepository bookingSeatRepository;
 
     @Override
     @Transactional
@@ -63,7 +73,7 @@ public class PaymentServiceImpl implements PaymentService {
                 .multiply(java.math.BigDecimal.valueOf(100))
                 .longValue();
 
-        com.app.vasyBus.dto.payment.PaymentResponseDTO existingPayment =
+        PaymentResponseDTO existingPayment =
                 paymentRepository.findPaymentByBookingId(booking.getBookingId());
 
         if (existingPayment != null
@@ -178,15 +188,53 @@ public class PaymentServiceImpl implements PaymentService {
     private void handlePaymentSuccess(PaymentIntent intent) {
         String stripePaymentId = intent.getId();
         paymentRepository.updatePaymentStatus(stripePaymentId, PaymentStatus.SUCCESS.name());
-        paymentRepository.findByStripePaymentId(stripePaymentId)
-                .ifPresent(payment -> {
-                    bookingRepository.updateBookingStatuses(
-                            payment.getBooking().getBookingId(),
-                            PaymentStatus.SUCCESS.name(),
-                            BookingStatus.CONFIRMED.name()
-                    );
+        paymentRepository.findByStripePaymentId(stripePaymentId).ifPresent(payment -> {
+            Booking booking = payment.getBooking();
+
+            bookingRepository.updateBookingStatuses(
+                    booking.getBookingId(),
+                    PaymentStatus.SUCCESS.name(),
+                    BookingStatus.CONFIRMED.name());
+
                     log.info("Booking {} confirmed after payment success",
                             payment.getBooking().getBookingId());
+
+                    try {
+                        List<BookingCreatedEvent.PassengerInfo> passengers =
+                                bookingSeatRepository
+                                        .findAllPassengersByBookingId(booking.getBookingId())
+                                        .stream()
+                                        .map(p -> BookingCreatedEvent.PassengerInfo.builder()
+                                                .passengerName(p.getPassengerName())
+                                                .passengerAge(p.getPassengerAge())
+                                                .passengerGender(p.getPassengerGender())
+                                                .seatNumber(p.getSeatNumber())
+                                                .seatType(p.getSeatType())
+                                                .build())
+                                        .collect(Collectors.toList());
+
+                        paymentEventProducer.sendPaymentSuccessEvent(
+                                PaymentSuccessEvent.builder()
+                                        .bookingId(booking.getBookingId())
+                                        .userId(booking.getUser().getUserId())
+                                        .userEmail(booking.getUser().getEmail())
+                                        .userName(booking.getUser().getName())
+                                        .stripePaymentId(stripePaymentId)
+                                        .amountPaid(payment.getAmount())
+                                        .currency("INR")
+                                        .busName(booking.getSchedule().getBus().getBusName())
+                                        .busType(booking.getSchedule().getBus().getBusType().name())
+                                        .sourceCity(booking.getSchedule().getRoute().getSourceCity())
+                                        .destinationCity(booking.getSchedule().getRoute().getDestinationCity())
+                                        .travelDate(booking.getSchedule().getTravelDate())
+                                        .departureTime(booking.getSchedule().getDepartureTime())
+                                        .arrivalTime(booking.getSchedule().getArrivalTime())
+                                        .passengers(passengers)
+                                        .build()
+                        );
+                    } catch (Exception e) {
+                        log.error("Failed to publish payment-success event: {}", e.getMessage());
+                    }
                 });
     }
 

@@ -9,10 +9,14 @@ import com.app.vasyBus.enums.BookingStatus;
 import com.app.vasyBus.enums.PaymentStatus;
 import com.app.vasyBus.enums.ScheduleStatus;
 import com.app.vasyBus.exception.ResourceNotFoundException;
+import com.app.vasyBus.kafka.event.BookingCancelledEvent;
+import com.app.vasyBus.kafka.event.BookingCreatedEvent;
+import com.app.vasyBus.kafka.producer.BookingCancellationProducer;
 import com.app.vasyBus.kafka.producer.BookingEventProducer;
 import com.app.vasyBus.model.*;
 import com.app.vasyBus.repository.*;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,6 +29,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class BookingServiceImpl implements BookingService{
 
     private final ScheduleRepository scheduleRepository;
@@ -34,6 +39,7 @@ public class BookingServiceImpl implements BookingService{
     private final BookingRepository bookingRepository;
     private final BookingSeatRepository bookingSeatRepository;
     private final BookingEventProducer bookingEventProducer;
+    private final BookingCancellationProducer bookingCancellationProducer;
 
     private static final String SEAT_LOCK_PREFIX = "seat:lock:";
 
@@ -114,6 +120,7 @@ public class BookingServiceImpl implements BookingService{
         Booking savedBooking = bookingRepository.save(booking);
 
         List<BookingSeat> bookingSeats = new ArrayList<>();
+        List<BookingCreatedEvent.PassengerInfo> passengerInfoList = new ArrayList<>();
 
         for(Seat seat : seatsToBook){
             BookingSeatRequestDTO passenger = passengerMap.get(seat.getSeatId());
@@ -126,12 +133,42 @@ public class BookingServiceImpl implements BookingService{
                     .passengerGender(passenger.getPassengerGender())
                     .build());
 
+            passengerInfoList.add(BookingCreatedEvent.PassengerInfo.builder()
+                    .passengerName(passenger.getPassengerName())
+                    .passengerAge(passenger.getPassengerAge())
+                    .passengerGender(passenger.getPassengerGender().name())
+                    .seatNumber(seat.getSeatNumber())
+                    .seatType(seat.getSeatType().name())
+                    .build());
+
             seatRepository.markSeatAsBooked(seat.getSeatId());
 
             redisTemplate.delete(SEAT_LOCK_PREFIX + seat.getSeatId());
         }
 
         bookingSeatRepository.saveAll(bookingSeats);
+
+        try {
+            bookingEventProducer.sendBookingCreatedEvent(
+                    BookingCreatedEvent.builder()
+                            .bookingId(savedBooking.getBookingId())
+                            .userId(user.getUserId())
+                            .userEmail(user.getEmail())
+                            .userName(user.getName())
+                            .busName(schedule.getBus().getBusName())
+                            .busType(schedule.getBus().getBusType().name())
+                            .sourceCity(schedule.getRoute().getSourceCity())
+                            .destinationCity(schedule.getRoute().getDestinationCity())
+                            .travelDate(schedule.getTravelDate())
+                            .departureTime(schedule.getDepartureTime())
+                            .arrivalTime(schedule.getArrivalTime())
+                            .totalAmount(totalAmount)
+                            .passengers(passengerInfoList)
+                            .build()
+            );
+        } catch (Exception e) {
+            log.error("Failed to publish booking-created event: {}", e.getMessage());
+        }
 
         return buildBookingDetail(savedBooking.getBookingId());
 
@@ -184,6 +221,30 @@ public class BookingServiceImpl implements BookingService{
         bookingSeatRepository.hardDeleteByBookingId(bookingId);
         bookingRepository.cancelBooking(bookingId, "USER", reason);
 
+        try {
+            String userEmail = userRepository.findById(booking.getUserId())
+                    .map(u -> u.getEmail())
+                    .orElse("");
+            bookingCancellationProducer.sendBookingCancelledEvent(
+                    BookingCancelledEvent.builder()
+                            .bookingId(bookingId)
+                            .userId(booking.getUserId())
+                            .userEmail(userEmail)
+                            .userName(booking.getUserName())
+                            .busName(booking.getBusName())
+                            .sourceCity(booking.getSourceCity())
+                            .destinationCity(booking.getDestinationCity())
+                            .travelDate(booking.getTravelDate())
+                            .departureTime(booking.getDepartureTime())
+                            .totalAmount(booking.getTotalAmount())
+                            .cancelledBy("USER")
+                            .cancellationReason(reason)
+                            .build()
+            );
+        } catch (Exception e) {
+            log.error("Failed to publish booking-cancelled event: {}", e.getMessage());
+        }
+
         return "Booking cancelled successfully";
     }
 
@@ -228,6 +289,30 @@ public class BookingServiceImpl implements BookingService{
                 seatRepository.markSeatAsAvailable(p.getSeatId()));
         bookingSeatRepository.softDeleteByBookingId(bookingId);
         bookingRepository.cancelBooking(bookingId, "ADMIN", reason);
+
+        try {
+            String userEmail = userRepository.findById(booking.getUserId())
+                    .map(u -> u.getEmail())
+                    .orElse("");
+            bookingCancellationProducer.sendBookingCancelledEvent(
+                    BookingCancelledEvent.builder()
+                            .bookingId(bookingId)
+                            .userId(booking.getUserId())
+                            .userEmail(userEmail)
+                            .userName(booking.getUserName())
+                            .busName(booking.getBusName())
+                            .sourceCity(booking.getSourceCity())
+                            .destinationCity(booking.getDestinationCity())
+                            .travelDate(booking.getTravelDate())
+                            .departureTime(booking.getDepartureTime())
+                            .totalAmount(booking.getTotalAmount())
+                            .cancelledBy("ADMIN")
+                            .cancellationReason(reason)
+                            .build()
+            );
+        } catch (Exception e) {
+            log.error("Failed to publish booking-cancelled event (admin): {}", e.getMessage());
+        }
 
         return "Booking cancelled by admin successfully";
     }
