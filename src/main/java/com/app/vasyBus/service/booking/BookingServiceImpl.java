@@ -40,6 +40,7 @@ public class BookingServiceImpl implements BookingService{
     private final BookingSeatRepository bookingSeatRepository;
     private final BookingEventProducer bookingEventProducer;
     private final BookingCancellationProducer bookingCancellationProducer;
+    private final PaymentRepository paymentRepository;
 
     private static final String SEAT_LOCK_PREFIX = "seat:lock:";
 
@@ -221,6 +222,12 @@ public class BookingServiceImpl implements BookingService{
         bookingSeatRepository.hardDeleteByBookingId(bookingId);
         bookingRepository.cancelBooking(bookingId, "USER", reason);
 
+        if ("SUCCESS".equals(booking.getPaymentStatus())) {
+            bookingRepository.updatePaymentStatus(bookingId, PaymentStatus.REFUNDED.name());
+            paymentRepository.updatePaymentStatusByBookingId(bookingId, PaymentStatus.REFUNDED.name());
+            log.info("Booking {} payment marked as REFUNDED after user cancellation", bookingId);
+        }
+
         try {
             String userEmail = userRepository.findById(booking.getUserId())
                     .map(u -> u.getEmail())
@@ -287,8 +294,15 @@ public class BookingServiceImpl implements BookingService{
                 bookingSeatRepository.findAllPassengersByBookingId(bookingId);
         passengers.forEach(p ->
                 seatRepository.markSeatAsAvailable(p.getSeatId()));
-        bookingSeatRepository.softDeleteByBookingId(bookingId);
+        bookingSeatRepository.hardDeleteByBookingId(bookingId);
         bookingRepository.cancelBooking(bookingId, "ADMIN", reason);
+
+        if ("SUCCESS".equals(booking.getPaymentStatus())) {
+            bookingRepository.updatePaymentStatus(bookingId, PaymentStatus.REFUNDED.name());
+            paymentRepository.updatePaymentStatusByBookingId(bookingId, PaymentStatus.REFUNDED.name());
+            log.info("Booking {} payment marked as REFUNDED after admin cancellation", bookingId);
+        }
+
 
         try {
             String userEmail = userRepository.findById(booking.getUserId())

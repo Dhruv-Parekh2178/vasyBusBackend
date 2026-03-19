@@ -58,4 +58,15 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
             WHERE payment_id = :paymentId
             """, nativeQuery = true)
     void softDeletePayment(@Param("paymentId") Long paymentId);
+
+    @Modifying
+    @Transactional
+    @Query(value = """
+            UPDATE payments
+            SET payment_status = :status
+            WHERE booking_id = :bookingId
+            AND is_deleted = false
+            """, nativeQuery = true)
+    void updatePaymentStatusByBookingId(@Param("bookingId") Long bookingId,
+                                        @Param("status") String status);
 }

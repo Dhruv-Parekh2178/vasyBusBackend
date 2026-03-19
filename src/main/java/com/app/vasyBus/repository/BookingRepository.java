@@ -183,6 +183,18 @@ List<BookingResponseDTO> findAllBookings();
     @Modifying
     @Transactional
     @Query(value = """
+        UPDATE bookings
+        SET payment_status = :paymentStatus,
+            updated_at     = now()
+        WHERE booking_id = :bookingId
+        AND is_deleted = false
+    """, nativeQuery = true)
+    void updatePaymentStatus(@Param("bookingId") Long bookingId,
+                             @Param("paymentStatus") String paymentStatus);
+
+    @Modifying
+    @Transactional
+    @Query(value = """
             UPDATE bookings
             SET payment_status  = :paymentStatus,
                 booking_status  = :bookingStatus,

@@ -61,7 +61,7 @@ public class Schedule {
     @Column(name = "travel_date", nullable = false)
     private LocalDate travelDate;
 
-    @Column(name = "", nullable = false)
+    @Column(name = "price_per_seat", nullable = false)
     private BigDecimal pricePerSeat;
 
     @Enumerated(EnumType.STRING)
