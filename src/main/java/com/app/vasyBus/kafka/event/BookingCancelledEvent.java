@@ -6,8 +6,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
-import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalTime;
 
 @Data
 @Builder
@@ -24,7 +24,7 @@ public class BookingCancelledEvent {
     private String sourceCity;
     private String destinationCity;
     private LocalDate travelDate;
-    private Instant departureTime;
+    private LocalTime departureTime;
 
     private BigDecimal totalAmount;
     private String cancelledBy;

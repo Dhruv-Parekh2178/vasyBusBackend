@@ -6,8 +6,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
-import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 
 @Data
@@ -30,8 +30,8 @@ public class PaymentSuccessEvent {
     private String sourceCity;
     private String destinationCity;
     private LocalDate travelDate;
-    private Instant departureTime;
-    private Instant arrivalTime;
+    private LocalTime departureTime;
+    private LocalTime arrivalTime;
 
     private List<BookingCreatedEvent.PassengerInfo> passengers;
 }

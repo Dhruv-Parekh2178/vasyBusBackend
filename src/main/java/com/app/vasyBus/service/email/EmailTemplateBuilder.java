@@ -10,7 +10,7 @@ import java.util.List;
 
 public class EmailTemplateBuilder {
 
-    private static final DateTimeFormatter TIME_FMT = DateTimeFormatter.ofPattern("hh:mm a").withZone(ZoneId.of("Asia/Kolkata"));
+    private static final DateTimeFormatter TIME_FMT = DateTimeFormatter.ofPattern("hh:mm a");
 
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("EEE, dd MM yyyy").withZone(ZoneId.of("Asia/Kolkata"));
 
