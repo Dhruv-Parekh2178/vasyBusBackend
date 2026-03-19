@@ -53,7 +53,7 @@ public class Schedule {
     private List<Booking> bookings;
 
     @Column(name = "departure_time", nullable = false)
-    private LocalTime  departureTime;
+    private LocalTime departureTime;
 
     @Column(name = "arrival_time", nullable = false)
     private LocalTime arrivalTime;

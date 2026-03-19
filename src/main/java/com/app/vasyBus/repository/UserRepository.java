@@ -1,5 +1,6 @@
 package com.app.vasyBus.repository;
 
+import com.app.vasyBus.dto.admin.UserManagementDTO;
 import com.app.vasyBus.dto.user.ProfileResponseDTO;
 import com.app.vasyBus.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -42,4 +43,23 @@ public interface UserRepository extends JpaRepository<User , Long> {
     @Query(value = "SELECT COUNT(*) > 0 FROM app_users WHERE phone = :phone AND user_id != :userId",
             nativeQuery = true)
     boolean existsByPhoneAndNotUserId(@Param("phone") String phone, @Param("userId") Long userId);
+
+    @Query(value = """
+        SELECT
+            u.user_id AS userId,
+            u.name AS name,
+            u.email AS email,
+            u.phone AS phone,
+            u.age AS age,
+            u.role AS role,
+            COUNT(b.booking_id)  AS totalBookings,
+            COUNT(CASE WHEN b.booking_status = 'CONFIRMED' THEN 1 END) AS confirmedBookings,
+            COUNT(CASE WHEN b.booking_status = 'CANCELLED' THEN 1 END) AS cancelledBookings,
+            u.created_at                                            AS createdAt
+        FROM app_users u
+        LEFT JOIN bookings b ON b.user_id = u.user_id AND b.is_deleted = false
+        GROUP BY u.user_id, u.name, u.email, u.phone, u.age, u.role, u.created_at
+        ORDER BY u.created_at DESC
+        """, nativeQuery = true)
+    java.util.List<UserManagementDTO> findAllUsersWithStats();
 }

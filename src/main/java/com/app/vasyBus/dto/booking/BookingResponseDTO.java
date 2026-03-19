@@ -1,5 +1,7 @@
 package com.app.vasyBus.dto.booking;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -14,7 +16,9 @@ public interface BookingResponseDTO {
     String getBusType();
     String getSourceCity();
     String getDestinationCity();
+    @JsonFormat(pattern = "HH:mm")
     LocalTime getDepartureTime();
+    @JsonFormat(pattern = "HH:mm")
     LocalTime getArrivalTime();
     LocalDate getTravelDate();
     BigDecimal getTotalAmount();
