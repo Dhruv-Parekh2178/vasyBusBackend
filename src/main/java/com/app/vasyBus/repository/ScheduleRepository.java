@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 
 @Repository
@@ -74,8 +75,8 @@ public interface ScheduleRepository extends JpaRepository<Schedule , Long> {
               price_per_seat=:pricePerSeat
            WHERE is_deleted = false AND schedule_id =:id
 """,nativeQuery = true)
-    void updateSchedule(@Param("id") Long id, @Param("departureTime")Instant departureTime ,
-                        @Param("arrivalTime") Instant arrivalTime, @Param("travelDate")LocalDate travelDate,
+    void updateSchedule(@Param("id") Long id, @Param("departureTime") LocalTime departureTime ,
+                        @Param("arrivalTime") LocalTime arrivalTime, @Param("travelDate")LocalDate travelDate,
                         @Param("pricePerSeat")BigDecimal pricePerSeat);
 
     @Modifying

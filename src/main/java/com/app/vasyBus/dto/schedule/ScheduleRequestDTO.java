@@ -10,6 +10,7 @@ import lombok.Data;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalTime;
 
 @Data
 public class ScheduleRequestDTO {
@@ -23,15 +24,14 @@ public class ScheduleRequestDTO {
     private Long routeId;
 
     @NotNull(message = "Departure time is required")
-    @Future(message = "Departure time must be in the future")
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "UTC")
+    @JsonFormat(pattern = "HH:mm")
     @JsonProperty("departure_time")
-    private Instant departureTime;
+    private LocalTime departureTime;
 
     @NotNull(message = "Arrival time is required")
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "UTC")
+    @JsonFormat(pattern = "HH:mm")
     @JsonProperty("arrival_time")
-    private Instant arrivalTime;
+    private LocalTime arrivalTime;
 
 
     @NotNull(message = "Travel date is required")

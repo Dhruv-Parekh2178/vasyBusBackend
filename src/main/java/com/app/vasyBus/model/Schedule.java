@@ -14,6 +14,7 @@ import org.hibernate.annotations.DynamicInsert;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 
 @Entity
@@ -54,10 +55,10 @@ public class Schedule {
     private List<Booking> bookings;
 
     @Column(name = "departure_time", nullable = false)
-    private Instant departureTime;
+    private LocalTime departureTime;
 
     @Column(name = "arrival_time", nullable = false)
-    private Instant arrivalTime;
+    private LocalTime arrivalTime;
 
     @Column(name = "travel_date", nullable = false)
     private LocalDate travelDate;
